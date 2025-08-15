@@ -20,7 +20,7 @@ class userController extends Controller
         ]);
 
         if($validate->fails()) {
-            return response()->json($validate->errors());
+            return response()->json($validate->errors(), 400);
         };
 
         User::query()->insert([
@@ -30,6 +30,8 @@ class userController extends Controller
             "description" => $request->description,
             "password" => Hash::make($request->password)
         ]);
+
+        return response()->json(["status" => "ok", "message" => "User successfully created"], 200);
     }
 
     public function selectUsers() {
@@ -75,13 +77,43 @@ class userController extends Controller
         ]);
         
         if($validate->fails()) {
-            return response()->json($validate->errors());
+            return response()->json($validate->errors(), 400);
         }
 
         if(!$token = Auth::guard('api')->attempt($request->only('username', 'password'))) {
-            return response()->json("username or password is invalid");
+            return response()->json([ "error" => "username or password is invalid", "message" => "username or password is invalid" ], 401);
         }
 
-        return $token;
+        return response()->json($token);
+    }
+
+    public function updatePassword(Request $request) {
+        $validate = Validator::make($request->all(), [
+            "username" => [ 'required', 'min:8', 'max:50', new noUppercase ],
+            "password" => [ 'required', "min:8" ],
+        ]);
+
+        if($validate->fails()) {
+            return response()->json($validate->errors());
+        }
+
+        $database = User::query()->where("username", $request->username)->get()->first();
+
+        if(empty($database)) {
+            return response()->json("takde user macam tu");
+        };
+
+        $passwordHashed = Hash::make($request->password);
+        User::query()->where("username", $request->username)->update([ "password" => $passwordHashed ]);
+        return response()->json("berhasil di update le");
+    }
+
+    public function auth() {
+        return response()->json(["status" => 'ok'], 200);
+    }
+
+    public function logout() {
+        Auth::guard('api')->logout();
+        return response()->json(['status' => 'ok'], 200);
     }
 }

@@ -16,6 +16,11 @@ Route::post('/user', [userController::class, "addUser"]);
 Route::get('/user', [userController::class, "selectuser"])->middleware('login');
 Route::patch('/user', [userController::class, "updateUser"])->middleware('login');
 Route::delete('/user', [userController::class, "deleteUser"])->middleware('login');
+Route::patch('/user/changePassword', [userController::class, "updatePassword"]);
 
-//login
-Route::get('/login', [userController::class, "login"]);
+// for Auth
+Route::post('/login', [userController::class, "login"]);
+Route::get('logout', [userController::class, "logout"]);
+
+//auth frontend
+Route::get('/auth', [userController::class, "auth"])->middleware('login');

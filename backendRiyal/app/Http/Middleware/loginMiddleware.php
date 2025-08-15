@@ -17,6 +17,6 @@ class loginMiddleware
         if (Auth::guard('api')->check()) {
             return $next($request);
         }
-        return response()->json('login dulu masseh');
+        return response()->json(['error' => 'Unauthorized', "message" => "You need to login"], 401);
     }
 }
